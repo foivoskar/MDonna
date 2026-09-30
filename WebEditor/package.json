@@ -1,0 +1,23 @@
+{
+  "name": "mdonna-web-editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/editor.js --bundle --minify --sourcemap --outfile=../Sources/MDonna/Resources/WebEditor/editor.js && cp src/index.html ../Sources/MDonna/Resources/WebEditor/index.html && cp src/theme.css ../Sources/MDonna/Resources/WebEditor/theme.css"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-markdown": "^6.3.4",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/language-data": "^6.5.2",
+    "@codemirror/search": "^6.5.11",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.38.2",
+    "@lezer/highlight": "^1.2.5",
+    "@lezer/markdown": "^1.4.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

@@ -1,0 +1,1686 @@
+:root {
+
+    color-scheme:
+        light dark;
+
+    --background:
+        #ffffff;
+
+    --foreground:
+        #202123;
+
+    --muted:
+        #6b6b6b;
+
+    --syntax:
+        #a1a1a1;
+
+    --selection:
+        rgba(85, 120, 255, 0.18);
+
+    --code-background:
+        #f7f7f8;
+
+    --inline-code-background:
+        #f1f1f3;
+
+    --border:
+        #e4e4e4;
+
+    --quote-border:
+        #d7d7d7;
+
+    --table-alt:
+        #fafafa;
+
+    --link:
+        #2563eb;
+}
+
+
+@media (
+    prefers-color-scheme: dark
+) {
+
+    :root {
+
+        --background:
+            #212121;
+
+        --foreground:
+            #ececec;
+
+        --muted:
+            #aaaaaa;
+
+        --syntax:
+            #777777;
+
+        --selection:
+            rgba(90, 140, 255, 0.28);
+
+        --code-background:
+            #2f2f2f;
+
+        --inline-code-background:
+            #343434;
+
+        --border:
+            #454545;
+
+        --quote-border:
+            #555555;
+
+        --table-alt:
+            #292929;
+
+        --link:
+            #7aa7ff;
+    }
+}
+
+
+html,
+body {
+
+    margin: 0;
+
+    width: 100%;
+    min-height: 100%;
+
+    background:
+        var(--background);
+
+    color:
+        var(--foreground);
+}
+
+
+body {
+
+    overflow: hidden;
+}
+
+
+#editor {
+
+    width: 100vw;
+    height: 100vh;
+}
+
+
+.cm-editor {
+
+    width: 100%;
+    height: 100%;
+
+    background:
+        var(--background);
+
+    color:
+        var(--foreground);
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Text",
+        system-ui,
+        sans-serif;
+
+    font-size:
+        16.5px;
+}
+
+
+.cm-editor.cm-focused {
+
+    outline: none;
+}
+
+
+.cm-scroller {
+
+    overflow: auto;
+
+    padding:
+        34px
+        42px
+        120px
+        42px;
+
+    font-family:
+        inherit;
+
+    line-height:
+        1.58;
+}
+
+
+.cm-content {
+
+    width: 100%;
+    max-width: 980px;
+
+    margin:
+        0 auto;
+
+    padding: 0;
+
+    caret-color:
+        var(--foreground);
+}
+
+
+.cm-line {
+
+    padding: 0;
+}
+
+
+.cm-gutters {
+
+    display: none;
+}
+
+
+.cm-cursor {
+
+    border-left-color:
+        var(--foreground);
+}
+
+
+.cm-selectionBackground,
+.cm-content ::selection {
+
+    background:
+        var(--selection) !important;
+}
+
+
+/* =========================================================
+   Source syntax revealed while editing
+   ========================================================= */
+
+.md-syntax {
+
+    color:
+        var(--syntax);
+}
+
+
+/* =========================================================
+   Headings
+   ========================================================= */
+
+.md-heading {
+
+    font-weight: 700;
+}
+
+
+.md-h1 {
+
+    font-size: 30px;
+    line-height: 1.25;
+}
+
+
+.md-h2 {
+
+    font-size: 25px;
+    line-height: 1.3;
+}
+
+
+.md-h3 {
+
+    font-size: 21px;
+    line-height: 1.35;
+
+    font-weight: 650;
+}
+
+
+.md-h4 {
+
+    font-size: 18.5px;
+    line-height: 1.4;
+
+    font-weight: 650;
+}
+
+
+.md-h5 {
+
+    font-size: 17px;
+    font-weight: 650;
+}
+
+
+.md-h6 {
+
+    font-size: 16.5px;
+    font-weight: 650;
+}
+
+
+.md-heading-line {
+
+    padding-top: 8px;
+    padding-bottom: 4px;
+}
+
+
+.md-h1-line {
+
+    padding-top: 10px;
+    padding-bottom: 8px;
+}
+
+
+.md-h2-line {
+
+    padding-top: 9px;
+    padding-bottom: 6px;
+}
+
+
+/* =========================================================
+   Inline styles
+   ========================================================= */
+
+.md-strong {
+
+    font-weight: 700;
+}
+
+
+.md-em {
+
+    font-style: italic;
+}
+
+
+.md-strike {
+
+    text-decoration:
+        line-through;
+}
+
+
+.md-inline-code {
+
+    font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    font-size:
+        0.88em;
+
+    background:
+        var(--inline-code-background);
+
+    border-radius:
+        5px;
+
+    padding:
+        2px 5px;
+}
+
+
+.md-link {
+
+    color:
+        var(--link);
+
+    text-decoration:
+        none;
+
+    cursor:
+        pointer;
+}
+
+
+.md-link:hover {
+
+    text-decoration:
+        underline;
+}
+
+
+.md-link-source {
+
+    color:
+        var(--link);
+}
+
+
+/* =========================================================
+   Lists
+   ========================================================= */
+
+.md-list-line {
+
+    padding-left:
+        calc(
+            8px +
+            var(--list-level) * 24px
+        );
+}
+
+
+.md-list-marker {
+
+    display:
+        inline-block;
+
+    min-width:
+        1.55em;
+
+    margin-right:
+        4px;
+
+    color:
+        var(--foreground);
+
+    font-variant-numeric:
+        tabular-nums;
+}
+
+
+/* =========================================================
+   Blockquotes
+   ========================================================= */
+
+.md-blockquote-line {
+
+    color:
+        var(--muted);
+
+    border-left:
+        3px solid
+        var(--quote-border);
+
+    padding-left:
+        14px;
+
+    margin-left:
+        calc(
+            var(--quote-level) * 6px
+        );
+}
+
+
+/* =========================================================
+   Horizontal rule
+   ========================================================= */
+
+.md-horizontal-rule {
+
+    display: block;
+
+    height: 1px;
+
+    margin:
+        18px 0;
+
+    background:
+        var(--border);
+}
+
+
+/* =========================================================
+   Fenced code
+   ========================================================= */
+
+.md-code-block {
+
+    display: block;
+
+    width: 100%;
+
+    box-sizing:
+        border-box;
+
+    margin:
+        14px 0 18px 0;
+
+    overflow: hidden;
+
+    border-radius:
+        10px;
+
+    background:
+        var(--code-background);
+}
+
+
+.md-code-header {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    min-height:
+        38px;
+
+    box-sizing:
+        border-box;
+
+    padding:
+        7px 10px 5px 14px;
+
+    color:
+        var(--muted);
+
+    font-size:
+        12px;
+}
+
+
+.md-code-language {
+
+    font-weight: 500;
+}
+
+
+.md-copy-button {
+
+    appearance: none;
+
+    border: none;
+
+    border-radius:
+        7px;
+
+    background:
+        transparent;
+
+    color:
+        var(--muted);
+
+    font: inherit;
+
+    padding:
+        5px 9px;
+
+    cursor:
+        pointer;
+}
+
+
+.md-copy-button:hover {
+
+    background:
+        color-mix(
+            in srgb,
+            var(--foreground) 7%,
+            transparent
+        );
+
+    color:
+        var(--foreground);
+}
+
+
+.md-code-block pre {
+
+    margin: 0;
+
+    padding:
+        2px
+        16px
+        16px
+        16px;
+
+    overflow-x:
+        auto;
+}
+
+
+.md-code-block code {
+
+    font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    font-size:
+        14px;
+
+    line-height:
+        1.55;
+
+    white-space:
+        pre;
+
+    color:
+        var(--foreground);
+}
+
+
+.md-source-code-block {
+
+    font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    background:
+        var(--code-background);
+}
+
+
+/* =========================================================
+   Tables
+   ========================================================= */
+
+.md-table-wrapper {
+
+    display: block;
+
+    width:
+        fit-content;
+
+    max-width: 100%;
+
+    overflow-x:
+        auto;
+
+    margin:
+        14px 0 18px 0;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        8px;
+}
+
+
+.md-table {
+
+    border-collapse:
+        collapse;
+
+    border-spacing: 0;
+
+    width:
+        auto;
+
+    min-width:
+        320px;
+
+    font-size:
+        14.5px;
+}
+
+
+.md-table th,
+.md-table td {
+
+    padding:
+        8px 13px;
+
+    border-right:
+        1px solid
+        var(--border);
+
+    border-bottom:
+        1px solid
+        var(--border);
+
+    white-space:
+        nowrap;
+}
+
+
+.md-table th {
+
+    font-weight: 650;
+
+    background:
+        var(--background);
+}
+
+
+.md-table tr:nth-child(even) td {
+
+    background:
+        var(--table-alt);
+}
+
+
+.md-table th:last-child,
+.md-table td:last-child {
+
+    border-right: none;
+}
+
+
+.md-table tr:last-child td {
+
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   Image placeholder — real images come next
+   ========================================================= */
+
+.md-image-placeholder {
+
+    color:
+        var(--muted);
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        6px;
+
+    padding:
+        4px 7px;
+
+    font-size:
+        13px;
+}
+
+/* =========================================================
+   MDonna editor typography override
+   ========================================================= */
+
+.cm-content,
+.cm-line {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Text",
+        system-ui,
+        sans-serif !important;
+}
+
+.cm-content {
+    font-size: 16.5px;
+    line-height: 1.58;
+}
+
+.md-source-code-block,
+.md-source-code-block .cm-line {
+    font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace !important;
+}
+
+/* =========================================================
+   MDonna compact typography pass
+   ========================================================= */
+
+.cm-editor {
+    font-size: 15.5px;
+}
+
+.cm-content {
+    font-size: 15.5px;
+    line-height: 1.55;
+}
+
+.md-h1 {
+    font-size: 27px;
+}
+
+.md-h2 {
+    font-size: 22.5px;
+}
+
+.md-h3 {
+    font-size: 19px;
+}
+
+.md-h4 {
+    font-size: 17.5px;
+}
+
+.md-h5 {
+    font-size: 16px;
+}
+
+.md-h6 {
+    font-size: 15.5px;
+}
+
+.md-code-block code {
+    font-size: 13px;
+}
+
+.md-table {
+    font-size: 13.5px;
+}
+
+/* =========================================================
+   Nested-list geometry fix
+   ========================================================= */
+
+.md-list-line {
+    padding-left:
+        var(--list-indent, 8px);
+}
+
+.md-list-marker {
+    display: inline-block;
+
+    min-width: 1.25em;
+
+    margin-right: 7px;
+
+    color:
+        var(--foreground);
+
+    font-variant-numeric:
+        tabular-nums;
+}
+
+/* =========================================================
+   Native macOS window background
+   ========================================================= */
+
+/*
+   The WKWebView no longer paints a second white surface.
+   The native NSWindow background is visible through the
+   entire editor, including underneath the title bar.
+*/
+
+html,
+body,
+#editor,
+.cm-editor,
+.cm-scroller,
+.cm-content {
+    background-color:
+        transparent !important;
+}
+
+/* =========================================================
+   Definitive nested-list layout
+   ========================================================= */
+
+.md-list-line {
+    padding-left: 0 !important;
+}
+
+.md-list-marker {
+    display: inline-block;
+
+    min-width: 1.15em;
+
+    margin-right: 8px;
+
+    color: var(--foreground);
+
+    font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   List marker visibility
+   ========================================================= */
+
+.md-list-marker-bullet {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        system-ui,
+        sans-serif;
+
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 1;
+
+    min-width: 1.05em;
+    margin-right: 9px;
+
+    vertical-align: -1px;
+}
+
+.md-list-marker-number {
+    font-size: 15.5px;
+
+    min-width: 1.6em;
+    margin-right: 6px;
+}
+
+/* =========================================================
+   Compact unified window top
+   ========================================================= */
+
+.cm-scroller {
+    padding-top: 26px;
+}
+
+/* =========================================================
+   Natural Markdown list markers
+   ========================================================= */
+
+.md-list-marker-bullet {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Text",
+        system-ui,
+        sans-serif;
+
+    font-weight: 400;
+
+    min-width: 1em;
+
+    margin-right: 9px;
+
+    vertical-align: 0;
+}
+
+
+/* Level 1: normal solid bullet */
+
+.md-list-level-0 {
+    font-size: 15px;
+}
+
+
+/* Level 2: larger but light open circle */
+
+.md-list-level-1 {
+    font-size: 18px;
+    font-weight: 300;
+
+    vertical-align: -1px;
+}
+
+
+/* Level 3: small square */
+
+.md-list-level-2 {
+    font-size: 11px;
+
+    vertical-align: 1px;
+}
+
+/* =========================================================
+   Compact seamless title region
+   ========================================================= */
+
+/*
+   WKWebView now extends underneath the hidden native
+   titlebar. Therefore this is the ONLY top spacing needed.
+*/
+
+.cm-scroller {
+    padding-top: 42px !important;
+}
+
+/* =========================================================
+   Real native titlebar layout
+   ========================================================= */
+
+/*
+   The editor now starts BELOW the native macOS titlebar.
+
+   Only document padding remains here.
+*/
+
+.cm-scroller {
+    padding-top: 24px !important;
+}
+
+/* =========================================================
+   Standard native titlebar
+   ========================================================= */
+
+/*
+   The WKWebView now begins below the real native titlebar.
+   Only ordinary document padding belongs here.
+*/
+
+.cm-scroller {
+    padding-top: 24px !important;
+}
+
+/* =========================================================
+   Geometric list markers
+   ========================================================= */
+
+.md-list-marker-bullet {
+    position: relative;
+
+    display: inline-block;
+
+    width: 16px;
+    min-width: 16px;
+    height: 1em;
+
+    margin-right: 8px;
+
+    vertical-align: middle;
+
+    font-size: inherit;
+}
+
+
+/* Level 1 — filled circle */
+
+.md-list-level-0::before {
+    content: "";
+
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    left: 5px;
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    border-radius: 50%;
+
+    background:
+        var(--foreground);
+}
+
+
+/* Level 2 — hollow circle */
+
+.md-list-level-1::before {
+    content: "";
+
+    position: absolute;
+
+    width: 6px;
+    height: 6px;
+
+    left: 4px;
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    box-sizing:
+        border-box;
+
+    border:
+        1.3px solid
+        var(--foreground);
+
+    border-radius: 50%;
+
+    background:
+        transparent;
+}
+
+
+/* Level 3 — small square */
+
+.md-list-level-2::before {
+    content: "";
+
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    left: 5px;
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    border-radius: 1px;
+
+    background:
+        var(--foreground);
+}
+
+/* =========================================================
+   Document surface
+   ========================================================= */
+
+/*
+   The native macOS titlebar remains separate and draggable.
+
+   Only the actual document/editor surface gets its own
+   background again.
+*/
+
+html,
+body,
+#editor,
+.cm-editor,
+.cm-scroller,
+.cm-content {
+    background-color:
+        var(--background) !important;
+}
+
+/* =========================================================
+   Cursor-stable fenced code blocks
+   ========================================================= */
+
+/*
+   Opening and closing ``` remain in the Markdown source,
+   but take no visual space in live preview.
+*/
+
+.cm-line.md-code-fence-hidden {
+    height: 0 !important;
+    min-height: 0 !important;
+
+    line-height: 0 !important;
+    font-size: 0 !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    overflow: hidden !important;
+
+    color: transparent !important;
+}
+
+
+/*
+   Real CodeMirror lines — not a replacement widget.
+*/
+
+.cm-line.md-code-line {
+    box-sizing: border-box;
+
+    background:
+        var(--code-background);
+
+    font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace !important;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+}
+
+
+.cm-line.md-code-first-line {
+    padding-top: 4px !important;
+}
+
+
+.cm-line.md-code-last-line {
+    padding-bottom: 16px !important;
+
+    margin-bottom: 18px;
+
+    border-radius:
+        0 0 10px 10px;
+}
+
+
+/*
+   Header lives directly above those real code lines.
+*/
+
+.md-code-header-widget {
+    box-sizing: border-box;
+
+    width: 100%;
+
+    min-height: 38px;
+
+    margin-top: 14px;
+
+    padding:
+        7px 10px 5px 14px;
+
+    border-radius:
+        10px 10px 0 0;
+
+    background:
+        var(--code-background);
+}
+
+/* =========================================================
+   CodeMirror coordinate stability
+   ========================================================= */
+
+/*
+   IMPORTANT:
+   Avoid vertical margins on CodeMirror block widgets.
+
+   CodeMirror's height map must see every pixel of vertical
+   space. Use padding INSIDE the widget instead.
+*/
+
+
+/* Code header */
+
+.md-code-header-slot {
+    display: block;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding-top: 14px;
+
+    margin: 0 !important;
+
+    background: transparent;
+}
+
+
+.md-code-header-widget {
+    margin: 0 !important;
+}
+
+
+/*
+   The final code line used to have margin-bottom.
+   That can shift visual coordinates relative to CM's
+   document height map.
+
+   Keep the space inside the measured line instead.
+*/
+
+.cm-line.md-code-last-line {
+    margin-bottom: 0 !important;
+
+    padding-bottom: 18px !important;
+}
+
+
+/* Table */
+
+.md-table-slot {
+    display: block;
+
+    width: fit-content;
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+    padding-top: 14px;
+    padding-bottom: 18px;
+
+    margin: 0 !important;
+}
+
+
+.md-table-wrapper {
+    margin: 0 !important;
+}
+
+
+/* Horizontal rule */
+
+.md-horizontal-rule {
+    position: relative;
+
+    display: block;
+
+    height: 37px !important;
+
+    margin: 0 !important;
+
+    background: transparent !important;
+}
+
+
+.md-horizontal-rule::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    top: 18px;
+
+    height: 1px;
+
+    background:
+        var(--border);
+}
+
+
+/* =========================================================
+   Visible text selection
+   ========================================================= */
+
+:root {
+    --selection:
+        rgba(59, 130, 246, 0.25);
+}
+
+
+@media (
+    prefers-color-scheme: dark
+) {
+
+    :root {
+        --selection:
+            rgba(96, 165, 250, 0.32);
+    }
+}
+
+
+/*
+   CodeMirror's actual text selection layer.
+*/
+
+.cm-selectionLayer
+.cm-selectionBackground {
+    background-color:
+        var(--selection) !important;
+}
+
+
+.cm-editor:not(.cm-focused)
+.cm-selectionBackground {
+    background-color:
+        var(--selection) !important;
+}
+
+
+/*
+   Some rendered Markdown elements are replacement widgets,
+   so CodeMirror cannot paint ordinary character-selection
+   rectangles inside them.
+
+   When Cmd+A selects the entire Markdown document, tint those
+   rendered widgets as well.
+*/
+
+.md-entire-document-selected
+.md-code-header-widget,
+
+.md-entire-document-selected
+.md-code-line,
+
+.md-entire-document-selected
+.md-table-wrapper {
+
+    box-shadow:
+        inset
+        0 0 0 9999px
+        var(--selection);
+}
+
+
+.md-entire-document-selected
+.md-link,
+
+.md-entire-document-selected
+.md-list-marker,
+
+.md-entire-document-selected
+.md-inline-code {
+
+    background-color:
+        var(--selection) !important;
+}
+
+
+/*
+   The horizontal rule corresponds to selected Markdown too.
+*/
+
+.md-entire-document-selected
+.md-horizontal-rule {
+
+    background-color:
+        var(--selection) !important;
+}
+
+/* =========================================================
+   Editable fenced-code source
+   ========================================================= */
+
+.cm-line.md-code-fence-source {
+    box-sizing: border-box;
+
+    background:
+        var(--code-background);
+
+    color:
+        var(--syntax);
+
+    font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace !important;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+}
+
+
+.cm-line.md-code-fence-source-open {
+    padding-top: 9px !important;
+    padding-bottom: 5px !important;
+
+    border-radius:
+        10px 10px 0 0;
+}
+
+
+.cm-line.md-code-active-line {
+    background:
+        var(--code-background);
+
+    margin: 0 !important;
+
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+}
+
+
+.cm-line.md-code-fence-source-close {
+    padding-top: 5px !important;
+    padding-bottom: 10px !important;
+
+    margin-bottom: 18px;
+
+    border-radius:
+        0 0 10px 10px;
+}
+
+/* =========================================================
+   MDonna visible selection
+   ========================================================= */
+
+:root {
+    --md-selection:
+        rgba(77, 137, 255, 0.24);
+}
+
+
+@media (
+    prefers-color-scheme: dark
+) {
+    :root {
+        --md-selection:
+            rgba(95, 157, 255, 0.34);
+    }
+}
+
+
+/*
+   Actual source-backed visible text.
+*/
+
+.md-visible-selection {
+    background:
+        var(--md-selection) !important;
+
+    border-radius:
+        2px;
+
+    box-decoration-break:
+        clone;
+
+    -webkit-box-decoration-break:
+        clone;
+}
+
+
+/*
+   Replacement widgets whose visible DOM no longer has
+   a one-to-one browser text range.
+*/
+
+.md-selected-widget {
+    position: relative;
+}
+
+
+.md-selected-widget::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 20;
+
+    pointer-events: none;
+
+    border-radius: inherit;
+
+    background:
+        var(--md-selection);
+}
+
+
+/*
+   Keep Copy clickable even when the block is selected.
+*/
+
+.md-selected-widget
+.md-copy-button {
+    position: relative;
+
+    z-index: 21;
+}
+
+
+/*
+   Lists use a tiny inline marker. Tinting only its geometry
+   looks more natural than drawing a huge rectangle.
+*/
+
+.md-list-marker.md-selected-widget {
+    background:
+        var(--md-selection);
+
+    border-radius:
+        3px;
+}
+
+
+/*
+   Do not rely on CodeMirror's built-in selection colour now.
+   Our explicit layer is consistent across source and preview.
+*/
+
+.cm-selectionBackground {
+    background:
+        transparent !important;
+}
+
+/* =========================================================
+   Images
+   ========================================================= */
+
+.md-image-block-slot {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+
+    box-sizing: border-box;
+
+    padding:
+        12px 0 18px 0;
+
+    margin: 0;
+}
+
+
+.md-image-inline-slot {
+    display: inline-block;
+
+    vertical-align: middle;
+
+    margin:
+        0 3px;
+}
+
+
+.md-image {
+    cursor: text;
+
+    user-select: none;
+
+    -webkit-user-drag: none;
+}
+
+
+.md-image-block {
+    display: block;
+
+    max-width: 100%;
+    max-height: 72vh;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    border-radius: 9px;
+}
+
+
+.md-image-inline {
+    display: inline-block;
+
+    max-width: 7em;
+    max-height: 1.45em;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
+    border-radius: 3px;
+
+    vertical-align: -0.25em;
+}
+
+
+.md-image-error {
+    display: inline-block;
+
+    box-sizing: border-box;
+
+    padding:
+        8px 11px;
+
+    border:
+        1px solid
+        var(--border);
+
+    border-radius:
+        7px;
+
+    color:
+        var(--muted);
+
+    background:
+        var(--code-background);
+
+    font-size:
+        13px;
+}
+
+
+.md-image-source {
+    color:
+        var(--muted);
+
+    font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    font-size:
+        0.9em;
+}
+
+/* =========================================================
+   Programming-language syntax highlighting
+   ========================================================= */
+
+:root {
+    --syntax-keyword: #7c3aed;
+    --syntax-number: #b45309;
+    --syntax-string: #15803d;
+    --syntax-comment: #7a7a7a;
+
+    --syntax-variable: #242424;
+    --syntax-function: #2563eb;
+    --syntax-type: #a16207;
+    --syntax-property: #0369a1;
+
+    --syntax-operator: #be123c;
+    --syntax-meta: #6b7280;
+    --syntax-invalid: #dc2626;
+}
+
+
+@media (
+    prefers-color-scheme: dark
+) {
+
+    :root {
+        --syntax-keyword: #c084fc;
+        --syntax-number: #fbbf24;
+        --syntax-string: #86efac;
+        --syntax-comment: #8b949e;
+
+        --syntax-variable: #e6edf3;
+        --syntax-function: #79c0ff;
+        --syntax-type: #f2cc60;
+        --syntax-property: #7dd3fc;
+
+        --syntax-operator: #ff7b72;
+        --syntax-meta: #a1a1aa;
+        --syntax-invalid: #ff7b72;
+    }
+}
+
+
+.cm-line.md-code-line span,
+.cm-line.md-code-active-line span,
+.cm-line.md-code-fence-source span {
+    font-family: inherit;
+}
