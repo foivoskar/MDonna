@@ -11,7 +11,53 @@
 
 ---
 
-## About MDonna
+# Installation
+
+## Install from the DMG
+
+MDonna is distributed as a self-contained macOS disk image.
+
+1. Download the MDonna `.dmg`.
+2. Open the disk image.
+3. Drag **MDonna** into **Applications**.
+4. Eject the disk image.
+5. Open MDonna from the Applications folder.
+
+The packaged application is self-contained.
+
+You do **not** need Git, Node.js, npm, Swift, Xcode, or the MDonna source repository to run the application.
+
+### System compatibility
+
+The current release is built for:
+
+```text
+Apple Silicon / arm64
+```
+
+It is intended for Macs using Apple Silicon processors.
+
+### First launch and Gatekeeper
+
+The current release is locally signed but is **not Apple-notarized**.
+
+Because of this, macOS may block the application on its first launch.
+
+If that happens:
+
+1. Try to open MDonna normally.
+2. Open **System Settings → Privacy & Security**.
+3. Find the message concerning MDonna.
+4. Choose **Open Anyway**.
+5. Confirm that you want to open the application.
+
+Depending on the macOS version, right-clicking MDonna in Finder and choosing **Open** may also provide an explicit option to launch it.
+
+This approval is normally required only for the first launch.
+
+---
+
+# About MDonna
 
 **MDonna** is a lightweight native Markdown editor for macOS.
 
@@ -21,42 +67,15 @@ It is built around a simple idea:
 
 MDonna combines ordinary Markdown source files with an immediate, visually styled editing experience.
 
-There is no proprietary document format. A file edited with MDonna remains a normal `.md` file that can also be opened with another Markdown editor, a text editor, GitHub, documentation systems, static-site generators, or command-line tools.
+There is no proprietary document format.
+
+A file edited with MDonna remains a normal `.md` file that can also be opened with another Markdown editor, a text editor, GitHub, documentation systems, static-site generators, or command-line tools.
 
 ---
 
-## Features
+# Using MDonna
 
-MDonna currently provides:
-
-- native macOS application;
-- multiple independent document windows;
-- standard `.md` and `.markdown` files;
-- live Markdown styling;
-- headings;
-- bold and italic text;
-- lists;
-- blockquotes;
-- links;
-- images;
-- Markdown tables;
-- inline code;
-- fenced code blocks;
-- syntax highlighting;
-- inline mathematics;
-- display mathematics;
-- KaTeX rendering;
-- native macOS Open / Save workflow;
-- Finder **Open With** integration;
-- automatic application packaging;
-- DMG release generation;
-- release portability validation.
-
----
-
-## Multiple documents
-
-MDonna supports multiple documents at the same time.
+## Create a new document
 
 Use:
 
@@ -64,13 +83,48 @@ Use:
 ⌘ N
 ```
 
-to open a new independent document window.
+to create a new independent document window.
 
-Closing one document does not close the other open MDonna windows.
+MDonna supports multiple open documents at the same time.
+
+Closing one window does not close the other open documents.
+
+## Open a Markdown document
+
+MDonna works with standard:
+
+```text
+.md
+.markdown
+```
+
+files.
+
+You can open a document directly from MDonna or use Finder and choose MDonna through **Open With**.
+
+## Save a document
+
+Use the standard macOS command:
+
+```text
+⌘ S
+```
+
+The document remains an ordinary Markdown text file.
+
+## Close a document
+
+Use:
+
+```text
+⌘ W
+```
+
+Only the current document window is closed.
 
 ---
 
-## Markdown
+# Markdown
 
 MDonna edits ordinary Markdown directly.
 
@@ -90,9 +144,11 @@ This is **bold text** and this is *italic text*.
 [OpenAI](https://openai.com)
 ```
 
+The source remains visible and editable while Markdown elements are visually styled inside the editor.
+
 ---
 
-## Code blocks
+# Code blocks
 
 Fenced Markdown code blocks are supported.
 
@@ -126,17 +182,21 @@ java
 
 ---
 
-## Mathematics
+# Mathematics
 
 MDonna renders mathematical expressions using **KaTeX**.
 
-### Inline mathematics
+## Inline mathematics
+
+Use single dollar signs:
 
 ```markdown
 The relation is $E = mc^2$.
 ```
 
-### Display mathematics
+## Display mathematics
+
+Use double dollar signs:
 
 ```markdown
 $$
@@ -169,7 +229,7 @@ The Markdown file continues to contain the original LaTeX source.
 
 ---
 
-## Images
+# Images
 
 Standard Markdown image syntax is supported:
 
@@ -199,7 +259,7 @@ inside `notes.md`.
 
 ---
 
-## Tables
+# Tables
 
 Standard Markdown tables are supported:
 
@@ -212,59 +272,42 @@ Standard Markdown tables are supported:
 
 ---
 
-# Installation
+# Features
 
-## End users
+MDonna currently provides:
 
-The normal installation method is the MDonna `.dmg`.
-
-Open the disk image and drag:
-
-```text
-MDonna → Applications
-```
-
-The packaged application is self-contained.
-
-End users do **not** need:
-
-- Git;
-- Node.js;
-- npm;
-- Swift;
-- Swift Package Manager;
-- Xcode;
-- the MDonna source repository.
-
-### Current architecture
-
-Current development releases are built for:
-
-```text
-Apple Silicon / arm64
-```
-
-They therefore target Apple Silicon Macs.
-
-A Universal 2 (`arm64 + x86_64`) release may be added later.
-
-### Gatekeeper
-
-Current local releases use ad-hoc code signing.
-
-They are not yet distributed using Apple Developer ID signing and notarization.
-
-On another Mac, macOS may therefore require explicit approval before the application can be opened for the first time.
-
-Developer ID signing and Apple notarization are planned for the public distribution workflow.
+- a native macOS application;
+- multiple independent document windows;
+- standard `.md` and `.markdown` files;
+- live Markdown styling;
+- headings;
+- bold and italic text;
+- lists;
+- blockquotes;
+- links;
+- images;
+- Markdown tables;
+- inline code;
+- fenced code blocks;
+- syntax highlighting;
+- inline mathematics;
+- display mathematics;
+- KaTeX rendering;
+- native macOS Open / Save behaviour;
+- Finder **Open With** integration;
+- standalone application packaging;
+- DMG distribution;
+- release portability validation.
 
 ---
 
 # Building from source
 
+The sections below are intended for developers.
+
 ## Requirements
 
-Development currently requires:
+Building MDonna currently requires:
 
 - macOS;
 - Swift;
@@ -273,7 +316,7 @@ Development currently requires:
 - Node.js;
 - npm.
 
-Check the main tools with:
+Check the main development tools with:
 
 ```bash
 swift --version
@@ -286,7 +329,7 @@ npm --version
 ## Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/foivoskar/MDonna.git
 cd MDonna
 ```
 
@@ -296,7 +339,7 @@ cd MDonna
 
 The embedded editor has its own JavaScript dependencies.
 
-Install them once with:
+Install them with:
 
 ```bash
 cd WebEditor
@@ -304,7 +347,7 @@ npm install
 cd ..
 ```
 
-The dependency definitions are stored in:
+Dependency definitions are stored in:
 
 ```text
 WebEditor/package.json
@@ -317,7 +360,7 @@ WebEditor/package-lock.json
 
 # Architecture
 
-MDonna consists of two main layers:
+MDonna consists of two principal layers:
 
 ```text
 Native macOS application
@@ -325,15 +368,19 @@ Native macOS application
 Embedded WebEditor
 ```
 
-The native macOS layer handles:
+## Native macOS layer
+
+The native application handles:
 
 - application lifecycle;
-- windows;
+- document windows;
 - document management;
 - opening files;
 - saving files;
 - macOS integration;
 - communication with the embedded editor.
+
+## WebEditor
 
 The WebEditor handles:
 
@@ -345,17 +392,17 @@ The WebEditor handles:
 - tables;
 - mathematical rendering.
 
----
-
-# WebEditor development
-
-The WebEditor sources are located under:
+The WebEditor source is located under:
 
 ```text
 WebEditor/src/
 ```
 
-After modifying them, rebuild the WebEditor with:
+---
+
+# Building the WebEditor
+
+After changing files under `WebEditor/src/`, rebuild the editor with:
 
 ```bash
 cd WebEditor
@@ -363,35 +410,43 @@ npm run build
 cd ..
 ```
 
-The generated resources are then packaged into the native application.
+The generated WebEditor resources are packaged into the native application.
 
 ---
 
 # Build scripts
 
-MDonna separates development, installation, release packaging and release validation.
+MDonna separates application building, local installation, release packaging, and release validation.
 
 ## Build the application
+
+Run:
 
 ```bash
 ./Scripts/build-app.sh
 ```
 
-This creates:
+The resulting application is created at:
 
 ```text
 dist/MDonna.app
 ```
 
-The script packages the release executable, resources, WebEditor files, application metadata, Markdown document registration and application icon.
+The build script packages:
 
-It also performs local ad-hoc code signing.
+- the release executable;
+- application resources;
+- WebEditor resources;
+- application metadata;
+- Markdown document registration;
+- the application icon;
+- local code signing.
 
 ---
 
 ## Build and install locally
 
-For normal development:
+For development, run:
 
 ```bash
 ./Scripts/build-and-install.sh
@@ -409,7 +464,7 @@ install into /Applications
 launch
 ```
 
-The resulting installed application is:
+The installed application is:
 
 ```text
 /Applications/MDonna.app
@@ -417,35 +472,41 @@ The resulting installed application is:
 
 ---
 
-## Build a distributable DMG
+# Building a distributable DMG
 
-Create a release disk image with:
+Run:
 
 ```bash
 ./Scripts/build-release.sh
 ```
 
-The result is written under:
+The script creates the application and packages it into a standard macOS disk image.
+
+The result is stored under:
 
 ```text
 dist/
 ```
 
-For example:
+For the current release series, the filename has the form:
 
 ```text
 MDonna-0.1-macOS-arm64.dmg
 ```
 
-The DMG contains the complete application and a standard macOS drag-to-Applications installation window.
+Opening the disk image presents the standard macOS installation layout:
 
-The DMG itself is sufficient for installation on a compatible Mac. The recipient does not need the MDonna repository or development dependencies.
+```text
+MDonna  →  Applications
+```
+
+The DMG contains the complete application and can be distributed independently from the source repository.
 
 ---
 
-## Validate a release
+# Release validation
 
-Before distributing a DMG, run:
+Before distributing a generated DMG, run:
 
 ```bash
 ./Scripts/check-release.sh
@@ -453,31 +514,29 @@ Before distributing a DMG, run:
 
 The release checker verifies:
 
-- disk image integrity;
+- DMG integrity;
 - application bundle structure;
 - executable architecture;
 - code signature;
 - Gatekeeper status;
 - dynamic-library dependencies;
 - runtime search paths;
-- hard-coded development-machine paths;
+- hard-coded local development paths;
 - symlinks;
 - accidental development artefacts;
 - execution from an unrelated temporary directory.
 
-A healthy build should finish with:
+A successful portability check finishes with:
 
 ```text
 FAIL : 0
 ```
 
-Warnings related to ad-hoc signing, Apple notarization or the absence of Intel support are currently expected.
+Warnings concerning Gatekeeper or ad-hoc signing are expected for the current non-notarized release.
 
 ---
 
 # Repository structure
-
-The main repository structure is:
 
 ```text
 MDonna/
@@ -513,7 +572,7 @@ MDonna/
 
 # Generated files
 
-The following directories and files are generated locally and should not be treated as source code:
+The following are generated locally and are not source files:
 
 ```text
 .build/
@@ -523,21 +582,21 @@ Backups/
 install/MDonna.zip
 ```
 
-They can be regenerated from the repository source and build scripts.
+They can be recreated from the repository sources and build scripts.
 
-Release `.dmg` files are also build artefacts and do not need to be committed to the source repository.
+Generated `.app` and `.dmg` files are release/build artefacts and are not committed to the source tree.
 
 ---
 
 # Typical development workflow
 
-Synchronise the repository:
+Synchronise the local repository:
 
 ```bash
 git pull --rebase
 ```
 
-Make the desired changes.
+Make the required changes.
 
 If the WebEditor changed:
 
@@ -553,7 +612,7 @@ Build and install:
 ./Scripts/build-and-install.sh
 ```
 
-Inspect changes:
+Inspect the changes:
 
 ```bash
 git status
@@ -588,7 +647,7 @@ Validate it:
 ./Scripts/check-release.sh
 ```
 
-The current release pipeline is:
+The release pipeline is:
 
 ```text
 source
@@ -599,25 +658,13 @@ Swift release build
   ↓
 MDonna.app
   ↓
-code signing
+local code signing
   ↓
 DMG
   ↓
 release validation
   ↓
 distribution
-```
-
-Future public releases are intended to add:
-
-```text
-Developer ID signing
-        ↓
-Apple notarization
-        ↓
-stapling
-        ↓
-public distribution
 ```
 
 ---
@@ -648,37 +695,19 @@ Multiple documents can remain open independently.
 
 ## The application should remain focused
 
-MDonna is not intended to become:
-
-- a full IDE;
-- a cloud platform;
-- a proprietary knowledge-management system;
-- a closed document ecosystem.
+MDonna is not intended to be a full IDE, cloud platform, proprietary knowledge-management system, or closed document ecosystem.
 
 It is a focused native Markdown editor.
 
 ---
 
-# Development status
+# Current status
 
-MDonna is under active development.
+MDonna is an actively developed native Markdown editor for Apple Silicon Macs.
 
-Current areas of development include:
+The current build supports Markdown editing, multiple independent windows, code syntax highlighting, mathematical expressions with KaTeX, images, tables, native file handling, application packaging, DMG creation, and release portability validation.
 
-- Markdown editing and rendering;
-- mathematical expressions;
-- code blocks and syntax highlighting;
-- macOS document integration;
-- multiple document windows;
-- application packaging;
-- DMG distribution;
-- release validation.
-
-Future distribution work includes:
-
-- Developer ID signing;
-- Apple notarization;
-- possible Universal 2 releases.
+Current distributed builds are ad-hoc signed and are not Apple-notarized.
 
 ---
 
