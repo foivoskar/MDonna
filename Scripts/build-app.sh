@@ -12,13 +12,8 @@ cd "$PROJECT_DIR"
 APP_NAME="MDonna"
 BUNDLE_ID="org.mdonna.editor"
 
-INSTALL_APP="/Applications/MDonna.app"
-STAGING_APP="$PROJECT_DIR/.build/MDonna-Packaged.app"
-
-ICON_SOURCE="$PROJECT_DIR/Assets/MDonnaIcon.png"
-ICONSET_DIR="$PROJECT_DIR/.build/MDonna.iconset"
-ICON_ICNS="$PROJECT_DIR/.build/MDonna.icns"
-
+DIST_DIR="$PROJECT_DIR/dist"
+APP="$DIST_DIR/$APP_NAME.app"
 
 echo
 echo "=== Building MDonna Release ==="
@@ -26,16 +21,17 @@ echo "=== Building MDonna Release ==="
 swift build -c release
 
 BIN_DIR="$(
-    swift build \
-        -c release \
-        --show-bin-path
+    swift build -c release --show-bin-path
 )"
 
 EXECUTABLE="$BIN_DIR/$APP_NAME"
 RESOURCE_BUNDLE="$BIN_DIR/MDonna_MDonna.bundle"
 
-
-test -f "$EXECUTABLE"
+if [ ! -f "$EXECUTABLE" ]; then
+    echo "ERROR: Release executable not found:"
+    echo "$EXECUTABLE"
+    exit 1
+fi
 
 if [ ! -d "$RESOURCE_BUNDLE" ]; then
     echo "ERROR: SwiftPM resource bundle not found:"
@@ -45,120 +41,56 @@ fi
 
 
 echo
-echo "=== Creating application icon ==="
+echo "=== Creating MDonna.app ==="
 
-test -f "$ICON_SOURCE"
+rm -rf "$APP"
 
-rm -rf "$ICONSET_DIR"
-mkdir -p "$ICONSET_DIR"
-
-sips -z 16 16 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_16x16.png" \
-    >/dev/null
-
-sips -z 32 32 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_16x16@2x.png" \
-    >/dev/null
-
-sips -z 32 32 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_32x32.png" \
-    >/dev/null
-
-sips -z 64 64 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_32x32@2x.png" \
-    >/dev/null
-
-sips -z 128 128 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_128x128.png" \
-    >/dev/null
-
-sips -z 256 256 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_128x128@2x.png" \
-    >/dev/null
-
-sips -z 256 256 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_256x256.png" \
-    >/dev/null
-
-sips -z 512 512 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_256x256@2x.png" \
-    >/dev/null
-
-sips -z 512 512 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_512x512.png" \
-    >/dev/null
-
-sips -z 1024 1024 \
-    "$ICON_SOURCE" \
-    --out "$ICONSET_DIR/icon_512x512@2x.png" \
-    >/dev/null
-
-rm -f "$ICON_ICNS"
-
-iconutil \
-    -c icns \
-    "$ICONSET_DIR" \
-    -o "$ICON_ICNS"
-
-echo "✓ MDonna.icns generated"
-
-
-echo
-echo "=== Creating application bundle ==="
-
-rm -rf "$STAGING_APP"
-
-mkdir -p "$STAGING_APP/Contents/MacOS"
-mkdir -p "$STAGING_APP/Contents/Resources"
+mkdir -p "$APP/Contents/MacOS"
+mkdir -p "$APP/Contents/Resources"
 
 
 echo
 echo "=== Copying executable ==="
 
 cp "$EXECUTABLE" \
-   "$STAGING_APP/Contents/MacOS/MDonna"
+   "$APP/Contents/MacOS/$APP_NAME"
 
 chmod +x \
-    "$STAGING_APP/Contents/MacOS/MDonna"
+   "$APP/Contents/MacOS/$APP_NAME"
 
 
 echo
-echo "=== Copying WebEditor resources ==="
+echo "=== Copying resources ==="
+
+#
+# A normal macOS application keeps its resources under
+# Contents/Resources.
+#
+# SwiftPM creates:
+#
+#   MDonna_MDonna.bundle/Contents/Resources/...
+#
+# We copy the actual resource contents into the app's own
+# Contents/Resources directory.
+#
 
 if [ -d "$RESOURCE_BUNDLE/Contents/Resources" ]; then
 
     cp -R \
         "$RESOURCE_BUNDLE/Contents/Resources/." \
-        "$STAGING_APP/Contents/Resources/"
+        "$APP/Contents/Resources/"
 
 else
 
     cp -R \
         "$RESOURCE_BUNDLE/." \
-        "$STAGING_APP/Contents/Resources/"
+        "$APP/Contents/Resources/"
 fi
 
 
-echo
-echo "=== Copying application icon ==="
-
-cp "$ICON_ICNS" \
-   "$STAGING_APP/Contents/Resources/MDonna.icns"
-
-
-echo
 echo "=== Writing Info.plist ==="
 
-cat > "$STAGING_APP/Contents/Info.plist" <<PLIST
+cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -193,9 +125,6 @@ cat > "$STAGING_APP/Contents/Info.plist" <<PLIST
     <key>CFBundleVersion</key>
     <string>1</string>
 
-    <key>CFBundleIconFile</key>
-    <string>MDonna.icns</string>
-
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
 
@@ -204,33 +133,6 @@ cat > "$STAGING_APP/Contents/Info.plist" <<PLIST
 
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
-
-    <key>CFBundleDocumentTypes</key>
-    <array>
-        <dict>
-
-            <key>CFBundleTypeName</key>
-            <string>Markdown Document</string>
-
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-
-            <key>LSHandlerRank</key>
-            <string>Alternate</string>
-
-            <key>CFBundleTypeExtensions</key>
-            <array>
-                <string>md</string>
-                <string>markdown</string>
-            </array>
-
-            <key>LSItemContentTypes</key>
-            <array>
-                <string>net.daringfireball.markdown</string>
-            </array>
-
-        </dict>
-    </array>
 
 </dict>
 </plist>
@@ -241,17 +143,17 @@ echo
 echo "=== Checking Info.plist ==="
 
 plutil -lint \
-    "$STAGING_APP/Contents/Info.plist"
+    "$APP/Contents/Info.plist"
 
 
 echo
-echo "=== Signing application ==="
+echo "=== Ad-hoc signing app ==="
 
 codesign \
     --force \
     --deep \
     --sign - \
-    "$STAGING_APP"
+    "$APP"
 
 
 echo
@@ -261,36 +163,13 @@ codesign \
     --verify \
     --deep \
     --strict \
-    "$STAGING_APP"
-
-
-echo
-echo "=== Installing into /Applications ==="
-
-killall MDonna 2>/dev/null || true
-
-rm -rf "$INSTALL_APP"
-
-ditto \
-    "$STAGING_APP" \
-    "$INSTALL_APP"
-
-touch "$INSTALL_APP"
-
-
-echo
-echo "=== Registering MDonna ==="
-
-LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
-
-"$LSREGISTER" \
-    -f \
-    "$INSTALL_APP"
+    "$APP"
 
 
 echo
 echo "=========================================="
-echo " MDonna installed successfully"
+echo " MDonna.app created successfully"
 echo "=========================================="
 echo
-echo "$INSTALL_APP"
+echo "$APP"
+echo

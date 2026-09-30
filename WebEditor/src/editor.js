@@ -33,6 +33,8 @@ import {
     GFM
 } from "@lezer/markdown";
 
+import katex from "katex";
+
 
 
 
@@ -1040,6 +1042,149 @@ class LinkWidget extends WidgetType {
 }
 
 
+
+// ============================================================
+// MDonna KaTeX Math Widget
+// ============================================================
+
+class MathWidget extends WidgetType {
+
+    constructor(
+        source,
+        displayMode,
+        sourceFrom,
+        selected = false
+    ) {
+
+        super();
+
+        this.source =
+            source;
+
+        this.displayMode =
+            displayMode;
+
+        this.sourceFrom =
+            sourceFrom;
+
+        this.selected =
+            selected;
+    }
+
+
+    eq(other) {
+
+        return (
+            other.source === this.source &&
+            other.displayMode === this.displayMode &&
+            other.sourceFrom === this.sourceFrom &&
+            other.selected === this.selected
+        );
+    }
+
+
+    get estimatedHeight() {
+
+        return this.displayMode
+            ? 58
+            : 24;
+    }
+
+
+    toDOM(view) {
+
+        const wrapper =
+            document.createElement(
+                "span"
+            );
+
+        wrapper.className =
+            this.displayMode
+            ? "md-math md-math-block"
+            : "md-math md-math-inline";
+
+
+        if (this.selected) {
+
+            wrapper.classList.add(
+                "md-selected-widget"
+            );
+        }
+
+
+        /*
+         Clicking rendered mathematics reveals its
+         original Markdown/LaTeX source by placing
+         the cursor just inside the opening delimiter.
+        */
+
+        wrapper.addEventListener(
+            "mousedown",
+            event => {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                const delimiterLength =
+                    this.displayMode
+                    ? 2
+                    : 1;
+
+                const anchor =
+                    Math.min(
+                        this.sourceFrom +
+                            delimiterLength,
+                        view.state.doc.length
+                    );
+
+                view.dispatch({
+
+                    selection: {
+                        anchor
+                    },
+
+                    scrollIntoView:
+                        true
+                });
+
+                view.focus();
+            }
+        );
+
+
+        katex.render(
+            this.source,
+            wrapper,
+            {
+                displayMode:
+                    this.displayMode,
+
+                throwOnError:
+                    false,
+
+                strict:
+                    "ignore",
+
+                trust:
+                    false,
+
+                output:
+                    "htmlAndMathml"
+            }
+        );
+
+
+        return wrapper;
+    }
+
+
+    ignoreEvent() {
+
+        return false;
+    }
+}
+
+
 // ============================================================
 // Inline Markdown renderer for widgets
 // ============================================================
@@ -1050,7 +1195,7 @@ function appendInlineMarkdown(
 ) {
 
     const pattern =
-        /(\*\*.+?\*\*|__.+?__|~~.+?~~|`[^`\n]+`|\*[^*\n]+?\*|_[^_\n]+?_|!\[[^\]]*]\([^)]+\)|\[[^\]]+]\([^)]+\))/g;
+        /((?<!\\)\$(?!\$)[^$\n]+?(?<!\\)\$(?!\$)|\*\*.+?\*\*|__.+?__|~~.+?~~|`[^`\n]+`|\*[^*\n]+?\*|_[^_\n]+?_|!\[[^\]]*]\([^)]+\)|\[[^\]]+]\([^)]+\))/g;
 
     let position = 0;
 
@@ -1078,6 +1223,47 @@ function appendInlineMarkdown(
             match[0];
 
         if (
+            token.startsWith("$") &&
+            token.endsWith("$")
+        ) {
+
+            const math =
+                document.createElement(
+                    "span"
+                );
+
+            math.className =
+                "md-math md-math-inline";
+
+            katex.render(
+                token.slice(
+                    1,
+                    -1
+                ),
+                math,
+                {
+                    displayMode:
+                        false,
+
+                    throwOnError:
+                        false,
+
+                    strict:
+                        "ignore",
+
+                    trust:
+                        false,
+
+                    output:
+                        "htmlAndMathml"
+                }
+            );
+
+            parent.appendChild(
+                math
+            );
+
+        } else if (
             token.startsWith("**") &&
             token.endsWith("**")
         ) {
@@ -2319,6 +2505,292 @@ function buildDecorations(
 
 
     // --------------------------------------------------------
+
+    // --------------------------------------------------------
+    // MDonna KaTeX math decorations
+    // --------------------------------------------------------
+
+    /*
+     Display mathematics:
+
+         $$
+         E = mc^2
+         $$
+
+     This pass runs after fenced code blocks have already
+     populated protectedRanges, so dollar signs inside code
+     are left untouched.
+    */
+
+    const displayMathPattern =
+        /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$/g;
+
+
+    for (
+        const match
+        of text.matchAll(
+            displayMathPattern
+        )
+    ) {
+
+        const from =
+            match.index;
+
+        const to =
+            from +
+            match[0].length;
+
+
+        if (
+            insideAnyRange(
+                from,
+                to,
+                protectedRanges
+            )
+        ) {
+
+            continue;
+        }
+
+
+        const openingLine =
+            state.doc.lineAt(
+                from
+            );
+
+        const closingPosition =
+            Math.max(
+                from,
+                to - 1
+            );
+
+        const closingLine =
+            state.doc.lineAt(
+                closingPosition
+            );
+
+
+        const beforeOpening =
+            openingLine.text
+                .slice(
+                    0,
+                    from -
+                        openingLine.from
+                )
+                .trim();
+
+        const afterClosing =
+            closingLine.text
+                .slice(
+                    to -
+                        closingLine.from
+                )
+                .trim();
+
+
+        const standalone =
+            beforeOpening === ""
+            &&
+            afterClosing === "";
+
+
+        /*
+         A multiline $$ expression must occupy its own
+         block. This avoids consuming unrelated text from
+         neighbouring lines.
+        */
+
+        if (
+            match[0].includes("\n")
+            &&
+            !standalone
+        ) {
+
+            continue;
+        }
+
+
+        let replaceFrom =
+            from;
+
+        let replaceTo =
+            to;
+
+
+        if (standalone) {
+
+            replaceFrom =
+                openingLine.from;
+
+            replaceTo =
+                closingLine.to;
+
+            if (
+                replaceTo <
+                    text.length
+                &&
+                text[replaceTo] === "\n"
+            ) {
+
+                replaceTo += 1;
+            }
+        }
+
+
+        protectedRanges.push({
+            from:
+                replaceFrom,
+            to:
+                replaceTo
+        });
+
+
+        const active =
+            selectionTouches(
+                state,
+                from,
+                to
+            );
+
+
+        if (active) {
+
+            decorations.push(
+                Decoration.mark({
+                    class:
+                        "md-math-source"
+                })
+                .range(
+                    from,
+                    to
+                )
+            );
+
+            continue;
+        }
+
+
+        decorations.push(
+            Decoration.replace({
+
+                widget:
+                    new MathWidget(
+                        match[1],
+                        true,
+                        from,
+                        selectionOverlaps(
+                            state,
+                            from,
+                            to
+                        )
+                    ),
+
+                block:
+                    standalone
+            })
+            .range(
+                replaceFrom,
+                replaceTo
+            )
+        );
+    }
+
+
+    /*
+     Inline mathematics:
+
+         The energy is $E = mc^2$.
+
+     $$...$$ ranges have already been protected above and
+     therefore cannot accidentally be interpreted as inline
+     mathematics.
+    */
+
+    const inlineMathPattern =
+        /(?<!\\)\$(?!\$)([^$\n]+?)(?<!\\)\$(?!\$)/g;
+
+
+    for (
+        const match
+        of text.matchAll(
+            inlineMathPattern
+        )
+    ) {
+
+        const from =
+            match.index;
+
+        const to =
+            from +
+            match[0].length;
+
+
+        if (
+            insideAnyRange(
+                from,
+                to,
+                protectedRanges
+            )
+        ) {
+
+            continue;
+        }
+
+
+        protectedRanges.push({
+            from,
+            to
+        });
+
+
+        const active =
+            selectionTouches(
+                state,
+                from,
+                to
+            );
+
+
+        if (active) {
+
+            decorations.push(
+                Decoration.mark({
+                    class:
+                        "md-math-source"
+                })
+                .range(
+                    from,
+                    to
+                )
+            );
+
+            continue;
+        }
+
+
+        decorations.push(
+            Decoration.replace({
+
+                widget:
+                    new MathWidget(
+                        match[1],
+                        false,
+                        from,
+                        selectionOverlaps(
+                            state,
+                            from,
+                            to
+                        )
+                    )
+            })
+            .range(
+                from,
+                to
+            )
+        );
+    }
+
+
     // Line-level Markdown
     // --------------------------------------------------------
 

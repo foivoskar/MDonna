@@ -1684,3 +1684,84 @@ body,
 .cm-line.md-code-fence-source span {
     font-family: inherit;
 }
+
+
+/* =========================================================
+   MDonna mathematics
+   ========================================================= */
+
+.md-math {
+    cursor: text;
+}
+
+.md-math-inline {
+    display: inline-block;
+
+    vertical-align:
+        baseline;
+
+    margin:
+        0 0.06em;
+}
+
+.md-math-block {
+    display: block;
+
+    box-sizing:
+        border-box;
+
+    width:
+        100%;
+
+    margin:
+        0;
+
+    padding:
+        10px 0;
+
+    overflow-x:
+        auto;
+
+    overflow-y:
+        hidden;
+
+    text-align:
+        center;
+}
+
+.md-math-block
+.katex-display {
+    margin:
+        0;
+}
+
+.md-math-source {
+    font-family:
+        ui-monospace,
+        "SFMono-Regular",
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    color:
+        var(--syntax);
+}
+
+.md-math
+.katex {
+    color:
+        inherit;
+}
+
+.md-math.md-selected-widget {
+    background-color:
+        var(--selection);
+}
+
+.md-entire-document-selected
+.md-math {
+    background-color:
+        var(--selection);
+}
+

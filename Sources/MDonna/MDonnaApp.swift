@@ -100,63 +100,6 @@ final class MDonnaDocument:
 
     // MARK: Open
 
-
-    func openDocument(
-        at url: URL
-    ) {
-
-        guard
-            confirmReplacingDocument()
-        else {
-            return
-        }
-
-
-        do {
-
-            let loadedText =
-                try String(
-                    contentsOf:
-                        url,
-                    encoding:
-                        .utf8
-                )
-
-
-            text =
-                loadedText
-
-            fileURL =
-                url
-
-            isEdited =
-                false
-
-
-        } catch {
-
-            let alert =
-                NSAlert()
-
-            alert.messageText =
-                "Could not open Markdown file"
-
-            alert.informativeText =
-                error.localizedDescription
-
-            alert.alertStyle =
-                .warning
-
-            alert.addButton(
-                withTitle:
-                    "OK"
-            )
-
-            alert.runModal()
-        }
-    }
-
-
     func openDocument() {
 
         guard confirmReplacingDocument() else {
@@ -466,14 +409,186 @@ struct EditorView: View {
     }
 }
 
+
+// MARK: - Focused document
+
+private struct MDonnaDocumentFocusedKey:
+    FocusedValueKey
+{
+    typealias Value =
+        MDonnaDocument
+}
+
+
+extension FocusedValues {
+
+    var mdonnaDocument:
+        MDonnaDocument?
+    {
+        get {
+            self[
+                MDonnaDocumentFocusedKey.self
+            ]
+        }
+
+        set {
+            self[
+                MDonnaDocumentFocusedKey.self
+            ] = newValue
+        }
+    }
+}
+
+
+// MARK: - Open-document registry
+
+@MainActor
+private final class WeakMDonnaDocument {
+
+    weak var value:
+        MDonnaDocument?
+
+
+    init(
+        _ value: MDonnaDocument
+    ) {
+
+        self.value =
+            value
+    }
+}
+
+
+@MainActor
+final class MDonnaDocumentRegistry {
+
+    static let shared =
+        MDonnaDocumentRegistry()
+
+
+    private var documents:
+        [
+            ObjectIdentifier:
+                WeakMDonnaDocument
+        ] = [:]
+
+
+    private init() {}
+
+
+    func register(
+        _ document:
+            MDonnaDocument
+    ) {
+
+        purge()
+
+        documents[
+            ObjectIdentifier(
+                document
+            )
+        ] =
+            WeakMDonnaDocument(
+                document
+            )
+    }
+
+
+    func unregister(
+        _ document:
+            MDonnaDocument
+    ) {
+
+        documents.removeValue(
+            forKey:
+                ObjectIdentifier(
+                    document
+                )
+        )
+
+        purge()
+    }
+
+
+    var liveDocuments:
+        [MDonnaDocument]
+    {
+
+        purge()
+
+        return documents
+            .values
+            .compactMap {
+                $0.value
+            }
+    }
+
+
+    private func purge() {
+
+        documents =
+            documents.filter {
+                $0.value.value != nil
+            }
+    }
+}
+
+
+// MARK: - One independent document per window
+
+struct EditorWindowRoot: View {
+
+    @StateObject
+    private var document =
+        MDonnaDocument()
+
+
+    var body: some View {
+
+        EditorView(
+            document:
+                document
+        )
+        .focusedSceneValue(
+            \.mdonnaDocument,
+            document
+        )
+        .onAppear {
+
+            MDonnaDocumentRegistry
+                .shared
+                .register(
+                    document
+                )
+        }
+        .onDisappear {
+
+            MDonnaDocumentRegistry
+                .shared
+                .unregister(
+                    document
+                )
+        }
+    }
+}
+
+
 // MARK: - File menu
 
 struct MDonnaCommands:
     Commands
 {
 
-    let document:
-        MDonnaDocument
+    @Environment(
+        \.openWindow
+    )
+    private var openWindow
+
+
+    @FocusedValue(
+        \.mdonnaDocument
+    )
+    private var document
 
 
     var body: some Commands {
@@ -486,8 +601,18 @@ struct MDonnaCommands:
                 "New"
             ) {
 
-                document
-                    .newDocument()
+                /*
+                 Every Cmd+N creates a genuinely new
+                 WindowGroup instance.
+
+                 EditorWindowRoot owns its own StateObject,
+                 so every window gets its own MDonnaDocument.
+                */
+
+                openWindow(
+                    id:
+                        "editor"
+                )
             }
             .keyboardShortcut(
                 "n",
@@ -499,12 +624,15 @@ struct MDonnaCommands:
                 "Open…"
             ) {
 
-                document
+                document?
                     .openDocument()
             }
             .keyboardShortcut(
                 "o",
                 modifiers: .command
+            )
+            .disabled(
+                document == nil
             )
         }
 
@@ -517,11 +645,15 @@ struct MDonnaCommands:
                 "Save"
             ) {
 
-                document.save()
+                document?
+                    .save()
             }
             .keyboardShortcut(
                 "s",
                 modifiers: .command
+            )
+            .disabled(
+                document == nil
             )
 
 
@@ -529,7 +661,8 @@ struct MDonnaCommands:
                 "Save As…"
             ) {
 
-                document.saveAs()
+                document?
+                    .saveAs()
             }
             .keyboardShortcut(
                 "s",
@@ -537,6 +670,9 @@ struct MDonnaCommands:
                     .command,
                     .shift
                 ]
+            )
+            .disabled(
+                document == nil
             )
         }
     }
@@ -551,189 +687,42 @@ final class MDonnaAppDelegate:
     NSApplicationDelegate
 {
 
-    private var pendingOpenURLs:
-        [URL] = []
-
-
-    func attach(
-        document: MDonnaDocument
-    ) {
-
-        self.document =
-            document
-
-
-        guard
-            let url =
-                pendingOpenURLs.first
-        else {
-            return
-        }
-
-
-        pendingOpenURLs
-            .removeAll()
-
-
-        document.openDocument(
-            at:
-                url
-        )
-    }
-
-
-    func application(
-        _ application: NSApplication,
-        openFile filename: String
-    ) -> Bool {
-
-        let url =
-            URL(
-                fileURLWithPath:
-                    filename
-            )
-
-
-        if let document {
-
-            document.openDocument(
-                at:
-                    url
-            )
-
-        } else {
-
-            pendingOpenURLs =
-                [url]
-        }
-
-
-        return true
-    }
-
-
-    func application(
-        _ application: NSApplication,
-        open urls: [URL]
-    ) {
-
-        guard
-            let firstURL =
-                urls.first
-        else {
-            return
-        }
-
-
-        if let document {
-
-            document.openDocument(
-                at:
-                    firstURL
-            )
-
-        } else {
-
-            pendingOpenURLs =
-                urls
-        }
-    }
-
-
-    func application(
-        _ application: NSApplication,
-        openFiles filenames: [String]
-    ) {
-
-        let urls =
-            filenames.map {
-                URL(
-                    fileURLWithPath:
-                        $0
-                )
-            }
-
-
-        guard
-            let url =
-                urls.first
-        else {
-
-            application.reply(
-                toOpenOrPrint:
-                    .failure
-            )
-
-            return
-        }
-
-
-        if let document {
-
-            document.openDocument(
-                at:
-                    url
-            )
-
-        } else {
-
-            pendingOpenURLs =
-                urls
-        }
-
-
-        application.reply(
-            toOpenOrPrint:
-                .success
-        )
-    }
-
-
-
-    var document:
-        MDonnaDocument?
-
-
     func applicationShouldTerminate(
-        _ sender: NSApplication
+        _ sender:
+            NSApplication
     ) -> NSApplication.TerminateReply {
 
-        guard let document else {
-            return .terminateNow
+        /*
+         With multiple windows there is no longer one
+         global document.
+
+         Ask every currently open document whether the
+         application may terminate.
+        */
+
+        for document
+            in MDonnaDocumentRegistry
+                .shared
+                .liveDocuments
+        {
+
+            if !document
+                .confirmApplicationTermination()
+            {
+
+                return .terminateCancel
+            }
         }
 
-        if document
-            .confirmApplicationTermination() {
 
-            return .terminateNow
-        }
-
-        return .terminateCancel
+        return .terminateNow
     }
 
 
     func applicationDidFinishLaunching(
-        _ notification: Notification
+        _ notification:
+            Notification
     ) {
-
-        if
-            let iconURL =
-                Bundle.main.url(
-                    forResource:
-                        "MDonna",
-                    withExtension:
-                        "icns"
-                ),
-            let iconImage =
-                NSImage(
-                    contentsOf:
-                        iconURL
-                )
-        {
-            NSApp.applicationIconImage =
-                iconImage
-        }
-
 
         NSApp.setActivationPolicy(
             .regular
@@ -758,33 +747,32 @@ struct MDonnaApp:
     )
     private var appDelegate
 
-    @StateObject
-    private var document =
-        MDonnaDocument()
-
 
     var body: some Scene {
 
-        Window(
-            "MDonna",
-            id: "main"
+        WindowGroup(
+            id:
+                "editor"
         ) {
 
-            EditorView(
-                document:
-                    document
-            )
-            .onAppear {
+            /*
+             EditorWindowRoot, rather than MDonnaApp,
+             owns the document.
 
-                appDelegate.attach(document: document)
-            }
+             Therefore every WindowGroup instance has
+             completely independent text/file/save state.
+            */
+
+            EditorWindowRoot()
         }
         .commands {
 
-            MDonnaCommands(
-                document:
-                    document
-            )
+            /*
+             Commands obtain the document from the
+             currently focused window.
+            */
+
+            MDonnaCommands()
         }
     }
 }
