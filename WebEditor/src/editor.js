@@ -1125,8 +1125,23 @@ class MathWidget extends WidgetType {
                 event.preventDefault();
                 event.stopPropagation();
 
+                const openingDelimiter =
+                    view.state.doc.sliceString(
+                        this.sourceFrom,
+                        Math.min(
+                            this.sourceFrom + 2,
+                            view.state.doc.length
+                        )
+                    );
+
                 const delimiterLength =
-                    this.displayMode
+                    (
+                        openingDelimiter === "$$"
+                        ||
+                        openingDelimiter === "\\("
+                        ||
+                        openingDelimiter === "\\["
+                    )
                     ? 2
                     : 1;
 
@@ -1195,7 +1210,7 @@ function appendInlineMarkdown(
 ) {
 
     const pattern =
-        /((?<!\\)\$(?!\$)[^$\n]+?(?<!\\)\$(?!\$)|\*\*.+?\*\*|__.+?__|~~.+?~~|`[^`\n]+`|\*[^*\n]+?\*|_[^_\n]+?_|!\[[^\]]*]\([^)]+\)|\[[^\]]+]\([^)]+\))/g;
+        /((?<!\\)\$(?!\$)[^$\n]+?(?<!\\)\$(?!\$)|(?<!\\)\\\([^\n]+?(?<!\\)\\\)|\*\*.+?\*\*|__.+?__|~~.+?~~|`[^`\n]+`|\*[^*\n]+?\*|_[^_\n]+?_|!\[[^\]]*]\([^)]+\)|\[[^\]]+]\([^)]+\))/g;
 
     let position = 0;
 
@@ -1223,8 +1238,17 @@ function appendInlineMarkdown(
             match[0];
 
         if (
-            token.startsWith("$") &&
-            token.endsWith("$")
+            (
+                token.startsWith("$")
+                &&
+                token.endsWith("$")
+            )
+            ||
+            (
+                token.startsWith("\\(")
+                &&
+                token.endsWith("\\)")
+            )
         ) {
 
             const math =
@@ -1235,10 +1259,15 @@ function appendInlineMarkdown(
             math.className =
                 "md-math md-math-inline";
 
+            const mathDelimiterLength =
+                token.startsWith("\\(")
+                    ? 2
+                    : 1;
+
             katex.render(
                 token.slice(
-                    1,
-                    -1
+                    mathDelimiterLength,
+                    -mathDelimiterLength
                 ),
                 math,
                 {
@@ -2523,7 +2552,7 @@ function buildDecorations(
     */
 
     const displayMathPattern =
-        /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$/g;
+        /(?<!\\)\$\$([\s\S]+?)(?<!\\)\$\$|(?<!\\)\\\[([\s\S]+?)(?<!\\)\\\]/g;
 
 
     for (
@@ -2675,7 +2704,7 @@ function buildDecorations(
 
                 widget:
                     new MathWidget(
-                        match[1],
+                        match[1] ?? match[2],
                         true,
                         from,
                         selectionOverlaps(
@@ -2707,7 +2736,7 @@ function buildDecorations(
     */
 
     const inlineMathPattern =
-        /(?<!\\)\$(?!\$)([^$\n]+?)(?<!\\)\$(?!\$)/g;
+        /(?<!\\)\$(?!\$)([^$\n]+?)(?<!\\)\$(?!\$)|(?<!\\)\\\(([^\n]+?)(?<!\\)\\\)/g;
 
 
     for (
@@ -2773,7 +2802,7 @@ function buildDecorations(
 
                 widget:
                     new MathWidget(
-                        match[1],
+                        match[1] ?? match[2],
                         false,
                         from,
                         selectionOverlaps(
