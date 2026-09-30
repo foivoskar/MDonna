@@ -711,6 +711,14 @@ Current distributed builds are ad-hoc signed and are not Apple-notarized.
 
 ---
 
+# License
+
+MDonna is released under the [MIT License](LICENSE).
+
+Copyright © 2026 Foivos Karakostas.
+
+---
+
 <p align="center">
   <strong>MDonna</strong><br>
   Plain Markdown in. Readable document immediately.
