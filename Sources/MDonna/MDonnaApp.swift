@@ -2,22 +2,16 @@ import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
 
-// MARK: - Markdown file type
-
 extension UTType {
 
-    static var mdonnaMarkdown: UTType {
-
+    static let mdonnaMarkdown =
         UTType(
-            filenameExtension: "md",
-            conformingTo: .plainText
+            importedAs:
+                "net.daringfireball.markdown",
+            conformingTo:
+                .plainText
         )
-        ?? .plainText
-    }
 }
-
-
-// MARK: - Document controller
 
 @MainActor
 final class MDonnaDocument:
@@ -39,21 +33,19 @@ final class MDonnaDocument:
         }
     }
 
-
     @Published
     private(set)
     var fileURL: URL?
-
 
     @Published
     private(set)
     var isEdited = false
 
+    private var
+        isLoading = false
 
-    private var isLoading = false
-
-    private var lastSavedText = ""
-
+    private var
+        lastSavedText = ""
 
     var displayTitle: String {
 
@@ -67,7 +59,6 @@ final class MDonnaDocument:
         return "Untitled"
     }
 
-
     var windowTitle: String {
 
         if isEdited {
@@ -77,103 +68,30 @@ final class MDonnaDocument:
         return displayTitle
     }
 
+    func load(
+        from url: URL
+    ) throws {
 
-    // MARK: New
-
-    func newDocument() {
-
-        guard confirmReplacingDocument() else {
-            return
-        }
+        let contents =
+            try String(
+                contentsOf: url,
+                encoding: .utf8
+            )
 
         isLoading = true
 
-        text = ""
-        fileURL = nil
-        lastSavedText = ""
-
+        text = contents
+        fileURL = url
+        lastSavedText = contents
         isEdited = false
 
         isLoading = false
     }
 
-
-    // MARK: Open
-
-    func openDocument() {
-
-        guard confirmReplacingDocument() else {
-            return
-        }
-
-        let panel =
-            NSOpenPanel()
-
-        panel.allowedContentTypes = [
-            .mdonnaMarkdown,
-            .plainText
-        ]
-
-        panel.allowsMultipleSelection =
-            false
-
-        panel.canChooseDirectories =
-            false
-
-        panel.canChooseFiles =
-            true
-
-
-        guard
-            panel.runModal() == .OK,
-            let url = panel.url
-        else {
-            return
-        }
-
-
-        do {
-
-            let contents =
-                try String(
-                    contentsOf: url,
-                    encoding: .utf8
-                )
-
-            isLoading = true
-
-            text = contents
-
-            fileURL = url
-
-            lastSavedText =
-                contents
-
-            isEdited =
-                false
-
-            isLoading =
-                false
-
-        } catch {
-
-            showError(
-                title:
-                    "Could not open file",
-                error:
-                    error
-            )
-        }
-    }
-
-
-    // MARK: Save
-
     @discardableResult
     func save() -> Bool {
 
         if let fileURL {
-
             return write(
                 to: fileURL
             )
@@ -181,9 +99,6 @@ final class MDonnaDocument:
 
         return saveAs()
     }
-
-
-    // MARK: Save As
 
     @discardableResult
     func saveAs() -> Bool {
@@ -204,13 +119,13 @@ final class MDonnaDocument:
         panel.canCreateDirectories =
             true
 
-
         var suggestedName =
             displayTitle
 
         if suggestedName
             .lowercased()
-            .hasSuffix(".md") {
+            .hasSuffix(".md")
+        {
 
             suggestedName =
                 String(
@@ -219,10 +134,8 @@ final class MDonnaDocument:
                 )
         }
 
-
         panel.nameFieldStringValue =
             suggestedName + ".md"
-
 
         guard
             panel.runModal() == .OK,
@@ -232,18 +145,11 @@ final class MDonnaDocument:
             return false
         }
 
-
-        /*
-         Guarantee the .md extension ourselves.
-
-         We do not rely on DocumentGroup or NSSavePanel
-         deciding whether to append it.
-        */
-
         if targetURL
             .pathExtension
             .lowercased()
-            != "md" {
+            != "md"
+        {
 
             targetURL =
                 targetURL
@@ -252,15 +158,12 @@ final class MDonnaDocument:
                     )
         }
 
-
         return write(
             to: targetURL
         )
     }
 
-
-    // MARK: Writing
-
+    @discardableResult
     private func write(
         to url: URL
     ) -> Bool {
@@ -273,14 +176,9 @@ final class MDonnaDocument:
                 encoding: .utf8
             )
 
-            fileURL =
-                url
-
-            lastSavedText =
-                text
-
-            isEdited =
-                false
+            fileURL = url
+            lastSavedText = text
+            isEdited = false
 
             return true
 
@@ -297,23 +195,11 @@ final class MDonnaDocument:
         }
     }
 
-
-    // MARK: Application termination
-
-    func confirmApplicationTermination() -> Bool {
-
-        return confirmReplacingDocument()
-    }
-
-
-    // MARK: Unsaved changes
-
-    private func confirmReplacingDocument() -> Bool {
+    func confirmClosing() -> Bool {
 
         guard isEdited else {
             return true
         }
-
 
         let alert =
             NSAlert()
@@ -327,19 +213,20 @@ final class MDonnaDocument:
         alert.alertStyle =
             .warning
 
-
         alert.addButton(
-            withTitle: "Save"
+            withTitle:
+                "Save"
         )
 
         alert.addButton(
-            withTitle: "Cancel"
+            withTitle:
+                "Cancel"
         )
 
         alert.addButton(
-            withTitle: "Don't Save"
+            withTitle:
+                "Don't Save"
         )
-
 
         switch alert.runModal() {
 
@@ -354,10 +241,7 @@ final class MDonnaDocument:
         }
     }
 
-
-    // MARK: Error
-
-    private func showError(
+    func showError(
         title: String,
         error: Error
     ) {
@@ -378,24 +262,22 @@ final class MDonnaDocument:
     }
 }
 
-
-// MARK: - Editor
-
-struct EditorView: View {
+struct EditorView:
+    View
+{
 
     @ObservedObject
     var document:
         MDonnaDocument
 
-
     var body: some View {
 
         WebEditor(
-                text:
-                    $document.text,
-                fileURL:
-                    document.fileURL
-            )
+            text:
+                $document.text,
+            fileURL:
+                document.fileURL
+        )
         .frame(
             minWidth: 720,
             minHeight: 520
@@ -409,277 +291,122 @@ struct EditorView: View {
     }
 }
 
-
-// MARK: - Focused document
-
-private struct MDonnaDocumentFocusedKey:
-    FocusedValueKey
-{
-    typealias Value =
-        MDonnaDocument
-}
-
-
-extension FocusedValues {
-
-    var mdonnaDocument:
-        MDonnaDocument?
-    {
-        get {
-            self[
-                MDonnaDocumentFocusedKey.self
-            ]
-        }
-
-        set {
-            self[
-                MDonnaDocumentFocusedKey.self
-            ] = newValue
-        }
-    }
-}
-
-
-// MARK: - Open-document registry
-
 @MainActor
-private final class WeakMDonnaDocument {
+final class MDonnaWindowController:
+    NSWindowController,
+    NSWindowDelegate
+{
 
-    weak var value:
-        MDonnaDocument?
+    let mdonnaDocument:
+        MDonnaDocument
 
+    weak var appOwner:
+        MDonnaAppDelegate?
+
+    var allowCloseWithoutPrompt =
+        false
 
     init(
-        _ value: MDonnaDocument
+        document: MDonnaDocument,
+        owner: MDonnaAppDelegate
     ) {
 
-        self.value =
-            value
-    }
-}
-
-
-@MainActor
-final class MDonnaDocumentRegistry {
-
-    static let shared =
-        MDonnaDocumentRegistry()
-
-
-    private var documents:
-        [
-            ObjectIdentifier:
-                WeakMDonnaDocument
-        ] = [:]
-
-
-    private init() {}
-
-
-    func register(
-        _ document:
-            MDonnaDocument
-    ) {
-
-        purge()
-
-        documents[
-            ObjectIdentifier(
-                document
-            )
-        ] =
-            WeakMDonnaDocument(
-                document
-            )
-    }
-
-
-    func unregister(
-        _ document:
-            MDonnaDocument
-    ) {
-
-        documents.removeValue(
-            forKey:
-                ObjectIdentifier(
-                    document
-                )
-        )
-
-        purge()
-    }
-
-
-    var liveDocuments:
-        [MDonnaDocument]
-    {
-
-        purge()
-
-        return documents
-            .values
-            .compactMap {
-                $0.value
-            }
-    }
-
-
-    private func purge() {
-
-        documents =
-            documents.filter {
-                $0.value.value != nil
-            }
-    }
-}
-
-
-// MARK: - One independent document per window
-
-struct EditorWindowRoot: View {
-
-    @StateObject
-    private var document =
-        MDonnaDocument()
-
-
-    var body: some View {
-
-        EditorView(
-            document:
-                document
-        )
-        .focusedSceneValue(
-            \.mdonnaDocument,
+        self.mdonnaDocument =
             document
+
+        self.appOwner =
+            owner
+
+        let rootView =
+            EditorView(
+                document:
+                    document
+            )
+
+        let hostingController =
+            NSHostingController(
+                rootView:
+                    rootView
+            )
+
+        let window =
+            NSWindow(
+                contentRect:
+                    NSRect(
+                        x: 0,
+                        y: 0,
+                        width: 1000,
+                        height: 700
+                    ),
+                styleMask: [
+                    .titled,
+                    .closable,
+                    .miniaturizable,
+                    .resizable
+                ],
+                backing:
+                    .buffered,
+                defer:
+                    false
+            )
+
+        window.contentViewController =
+            hostingController
+
+        window.title =
+            document.windowTitle
+
+        window.minSize =
+            NSSize(
+                width: 720,
+                height: 520
+            )
+
+        window.isReleasedWhenClosed =
+            false
+
+        window.center()
+
+        super.init(
+            window:
+                window
         )
-        .onAppear {
 
-            MDonnaDocumentRegistry
-                .shared
-                .register(
-                    document
-                )
-        }
-        .onDisappear {
+        window.delegate =
+            self
+    }
 
-            MDonnaDocumentRegistry
-                .shared
-                .unregister(
-                    document
-                )
+    required init?(
+        coder: NSCoder
+    ) {
+        fatalError(
+            "init(coder:) has not been implemented"
+        )
+    }
+
+    func windowShouldClose(
+        _ sender: NSWindow
+    ) -> Bool {
+
+        if allowCloseWithoutPrompt {
+            return true
         }
+
+        return mdonnaDocument
+            .confirmClosing()
+    }
+
+    func windowWillClose(
+        _ notification:
+            Notification
+    ) {
+
+        appOwner?
+            .removeWindowController(
+                self
+            )
     }
 }
-
-
-// MARK: - File menu
-
-struct MDonnaCommands:
-    Commands
-{
-
-    @Environment(
-        \.openWindow
-    )
-    private var openWindow
-
-
-    @FocusedValue(
-        \.mdonnaDocument
-    )
-    private var document
-
-
-    var body: some Commands {
-
-        CommandGroup(
-            replacing: .newItem
-        ) {
-
-            Button(
-                "New"
-            ) {
-
-                /*
-                 Every Cmd+N creates a genuinely new
-                 WindowGroup instance.
-
-                 EditorWindowRoot owns its own StateObject,
-                 so every window gets its own MDonnaDocument.
-                */
-
-                openWindow(
-                    id:
-                        "editor"
-                )
-            }
-            .keyboardShortcut(
-                "n",
-                modifiers: .command
-            )
-
-
-            Button(
-                "Open…"
-            ) {
-
-                document?
-                    .openDocument()
-            }
-            .keyboardShortcut(
-                "o",
-                modifiers: .command
-            )
-            .disabled(
-                document == nil
-            )
-        }
-
-
-        CommandGroup(
-            replacing: .saveItem
-        ) {
-
-            Button(
-                "Save"
-            ) {
-
-                document?
-                    .save()
-            }
-            .keyboardShortcut(
-                "s",
-                modifiers: .command
-            )
-            .disabled(
-                document == nil
-            )
-
-
-            Button(
-                "Save As…"
-            ) {
-
-                document?
-                    .saveAs()
-            }
-            .keyboardShortcut(
-                "s",
-                modifiers: [
-                    .command,
-                    .shift
-                ]
-            )
-            .disabled(
-                document == nil
-            )
-        }
-    }
-}
-
-
-// MARK: - Application lifecycle
 
 @MainActor
 final class MDonnaAppDelegate:
@@ -687,92 +414,796 @@ final class MDonnaAppDelegate:
     NSApplicationDelegate
 {
 
-    func applicationShouldTerminate(
-        _ sender:
-            NSApplication
-    ) -> NSApplication.TerminateReply {
+    private var
+        windowControllers:
+            [MDonnaWindowController] = []
 
-        /*
-         With multiple windows there is no longer one
-         global document.
+    private var
+        receivedLaunchFile =
+            false
 
-         Ask every currently open document whether the
-         application may terminate.
-        */
+    func applicationWillFinishLaunching(
+        _ notification:
+            Notification
+    ) {
 
-        for document
-            in MDonnaDocumentRegistry
-                .shared
-                .liveDocuments
-        {
+        installMainMenu()
+    }
 
-            if !document
-                .confirmApplicationTermination()
-            {
+    func application(
+        _ sender: NSApplication,
+        openFiles filenames: [String]
+    ) {
 
-                return .terminateCancel
+        receivedLaunchFile =
+            true
+
+        var failed =
+            false
+
+        for filename in filenames {
+
+            let url =
+                URL(
+                    fileURLWithPath:
+                        filename
+                )
+
+            if !openFile(
+                at: url
+            ) {
+                failed = true
             }
         }
 
-
-        return .terminateNow
+        sender.reply(
+            toOpenOrPrint:
+                failed
+                    ? .failure
+                    : .success
+        )
     }
 
+    func applicationShouldOpenUntitledFile(
+        _ sender:
+            NSApplication
+    ) -> Bool {
+
+        false
+    }
 
     func applicationDidFinishLaunching(
         _ notification:
             Notification
     ) {
 
+        if
+            !receivedLaunchFile &&
+            windowControllers.isEmpty
+        {
+            createUntitledWindow()
+        }
+
         NSApp.setActivationPolicy(
             .regular
         )
 
         NSApp.activate(
-            ignoringOtherApps: true
+            ignoringOtherApps:
+                true
         )
+    }
+
+    func applicationShouldHandleReopen(
+        _ sender: NSApplication,
+        hasVisibleWindows flag: Bool
+    ) -> Bool {
+
+        if
+            !flag &&
+            windowControllers.isEmpty
+        {
+            createUntitledWindow()
+        }
+
+        return true
+    }
+
+    func applicationShouldTerminate(
+        _ sender:
+            NSApplication
+    ) -> NSApplication.TerminateReply {
+
+        for controller
+            in windowControllers
+        {
+
+            if !controller
+                .mdonnaDocument
+                .confirmClosing()
+            {
+                return .terminateCancel
+            }
+        }
+
+        for controller
+            in windowControllers
+        {
+            controller
+                .allowCloseWithoutPrompt =
+                    true
+        }
+
+        return .terminateNow
+    }
+
+    func createUntitledWindow() {
+
+        let document =
+            MDonnaDocument()
+
+        showWindow(
+            for:
+                document
+        )
+    }
+
+    @discardableResult
+    private func openFile(
+        at url: URL
+    ) -> Bool {
+
+        if let existing =
+            windowControllers
+                .first(
+                    where: {
+                        $0.mdonnaDocument.fileURL
+                            == url
+                    }
+                )
+        {
+
+            existing.window?
+                .makeKeyAndOrderFront(
+                    nil
+                )
+
+            return true
+        }
+
+        let document =
+            MDonnaDocument()
+
+        do {
+
+            try document.load(
+                from: url
+            )
+
+            showWindow(
+                for:
+                    document
+            )
+
+            return true
+
+        } catch {
+
+            document.showError(
+                title:
+                    "Could not open file",
+                error:
+                    error
+            )
+
+            return false
+        }
+    }
+
+    private func showWindow(
+        for document:
+            MDonnaDocument
+    ) {
+
+        let controller =
+            MDonnaWindowController(
+                document:
+                    document,
+                owner:
+                    self
+            )
+
+        windowControllers
+            .append(
+                controller
+            )
+
+        controller
+            .showWindow(
+                nil
+            )
+
+        controller
+            .window?
+            .makeKeyAndOrderFront(
+                nil
+            )
+
+        NSApp.activate(
+            ignoringOtherApps:
+                true
+        )
+    }
+
+    func removeWindowController(
+        _ controller:
+            MDonnaWindowController
+    ) {
+
+        windowControllers
+            .removeAll {
+                $0 === controller
+            }
+    }
+
+    private var activeController:
+        MDonnaWindowController?
+    {
+
+        if let keyWindow =
+            NSApp.keyWindow
+        {
+
+            if let controller =
+                windowControllers
+                    .first(
+                        where: {
+                            $0.window
+                                === keyWindow
+                        }
+                    )
+            {
+                return controller
+            }
+        }
+
+        if let mainWindow =
+            NSApp.mainWindow
+        {
+
+            return windowControllers
+                .first(
+                    where: {
+                        $0.window
+                            === mainWindow
+                    }
+                )
+        }
+
+        return nil
+    }
+
+    @objc
+    private func newDocumentAction(
+        _ sender: Any?
+    ) {
+
+        createUntitledWindow()
+    }
+
+    @objc
+    private func openDocumentAction(
+        _ sender: Any?
+    ) {
+
+        let panel =
+            NSOpenPanel()
+
+        panel.allowedContentTypes = [
+            .mdonnaMarkdown,
+            .plainText
+        ]
+
+        panel.allowsMultipleSelection =
+            true
+
+        panel.canChooseDirectories =
+            false
+
+        panel.canChooseFiles =
+            true
+
+        guard
+            panel.runModal() == .OK
+        else {
+            return
+        }
+
+        for url
+            in panel.urls
+        {
+            _ = openFile(
+                at: url
+            )
+        }
+    }
+
+    @objc
+    private func saveDocumentAction(
+        _ sender: Any?
+    ) {
+
+        _ = activeController?
+            .mdonnaDocument
+            .save()
+    }
+
+    @objc
+    private func saveDocumentAsAction(
+        _ sender: Any?
+    ) {
+
+        _ = activeController?
+            .mdonnaDocument
+            .saveAs()
+    }
+
+    @objc
+    private func closeWindowAction(
+        _ sender: Any?
+    ) {
+
+        activeController?
+            .window?
+            .performClose(
+                sender
+            )
+    }
+
+    private func installMainMenu() {
+
+        let mainMenu =
+            NSMenu()
+
+        let appMenuItem =
+            NSMenuItem()
+
+        mainMenu.addItem(
+            appMenuItem
+        )
+
+        let appMenu =
+            NSMenu()
+
+        appMenuItem.submenu =
+            appMenu
+
+        appMenu.addItem(
+            withTitle:
+                "About MDonna",
+            action:
+                #selector(
+                    NSApplication
+                        .orderFrontStandardAboutPanel(
+                            _:
+                        )
+                ),
+            keyEquivalent:
+                ""
+        )
+
+        appMenu.addItem(
+            NSMenuItem.separator()
+        )
+
+        let hideItem =
+            appMenu.addItem(
+                withTitle:
+                    "Hide MDonna",
+                action:
+                    #selector(
+                        NSApplication
+                            .hide(
+                                _:
+                            )
+                    ),
+                keyEquivalent:
+                    "h"
+            )
+
+        hideItem.target =
+            NSApp
+
+        let hideOthers =
+            appMenu.addItem(
+                withTitle:
+                    "Hide Others",
+                action:
+                    #selector(
+                        NSApplication
+                            .hideOtherApplications(
+                                _:
+                            )
+                    ),
+                keyEquivalent:
+                    "h"
+            )
+
+        hideOthers
+            .keyEquivalentModifierMask = [
+                .command,
+                .option
+            ]
+
+        hideOthers.target =
+            NSApp
+
+        let showAll =
+            appMenu.addItem(
+                withTitle:
+                    "Show All",
+                action:
+                    #selector(
+                        NSApplication
+                            .unhideAllApplications(
+                                _:
+                            )
+                    ),
+                keyEquivalent:
+                    ""
+            )
+
+        showAll.target =
+            NSApp
+
+        appMenu.addItem(
+            NSMenuItem.separator()
+        )
+
+        let quitItem =
+            appMenu.addItem(
+                withTitle:
+                    "Quit MDonna",
+                action:
+                    #selector(
+                        NSApplication
+                            .terminate(
+                                _:
+                            )
+                    ),
+                keyEquivalent:
+                    "q"
+            )
+
+        quitItem.target =
+            NSApp
+
+        let fileMenuItem =
+            NSMenuItem()
+
+        fileMenuItem.title =
+            "File"
+
+        mainMenu.addItem(
+            fileMenuItem
+        )
+
+        let fileMenu =
+            NSMenu(
+                title:
+                    "File"
+            )
+
+        fileMenuItem.submenu =
+            fileMenu
+
+        let newItem =
+            fileMenu.addItem(
+                withTitle:
+                    "New",
+                action:
+                    #selector(
+                        newDocumentAction(
+                            _:
+                        )
+                    ),
+                keyEquivalent:
+                    "n"
+            )
+
+        newItem.target =
+            self
+
+        let openItem =
+            fileMenu.addItem(
+                withTitle:
+                    "Open…",
+                action:
+                    #selector(
+                        openDocumentAction(
+                            _:
+                        )
+                    ),
+                keyEquivalent:
+                    "o"
+            )
+
+        openItem.target =
+            self
+
+        fileMenu.addItem(
+            NSMenuItem.separator()
+        )
+
+        let saveItem =
+            fileMenu.addItem(
+                withTitle:
+                    "Save",
+                action:
+                    #selector(
+                        saveDocumentAction(
+                            _:
+                        )
+                    ),
+                keyEquivalent:
+                    "s"
+            )
+
+        saveItem.target =
+            self
+
+        let saveAsItem =
+            fileMenu.addItem(
+                withTitle:
+                    "Save As…",
+                action:
+                    #selector(
+                        saveDocumentAsAction(
+                            _:
+                        )
+                    ),
+                keyEquivalent:
+                    "s"
+            )
+
+        saveAsItem
+            .keyEquivalentModifierMask = [
+                .command,
+                .shift
+            ]
+
+        saveAsItem.target =
+            self
+
+        fileMenu.addItem(
+            NSMenuItem.separator()
+        )
+
+        let closeItem =
+            fileMenu.addItem(
+                withTitle:
+                    "Close",
+                action:
+                    #selector(
+                        closeWindowAction(
+                            _:
+                        )
+                    ),
+                keyEquivalent:
+                    "w"
+            )
+
+        closeItem.target =
+            self
+
+        let editMenuItem =
+            NSMenuItem()
+
+        editMenuItem.title =
+            "Edit"
+
+        mainMenu.addItem(
+            editMenuItem
+        )
+
+        let editMenu =
+            NSMenu(
+                title:
+                    "Edit"
+            )
+
+        editMenuItem.submenu =
+            editMenu
+
+        editMenu.addItem(
+            withTitle:
+                "Undo",
+            action:
+                Selector(
+                    ("undo:")
+                ),
+            keyEquivalent:
+                "z"
+        )
+
+        let redo =
+            editMenu.addItem(
+                withTitle:
+                    "Redo",
+                action:
+                    Selector(
+                        ("redo:")
+                    ),
+                keyEquivalent:
+                    "z"
+            )
+
+        redo
+            .keyEquivalentModifierMask = [
+                .command,
+                .shift
+            ]
+
+        editMenu.addItem(
+            NSMenuItem.separator()
+        )
+
+        editMenu.addItem(
+            withTitle:
+                "Cut",
+            action:
+                #selector(
+                    NSText.cut(
+                        _:
+                    )
+                ),
+            keyEquivalent:
+                "x"
+        )
+
+        editMenu.addItem(
+            withTitle:
+                "Copy",
+            action:
+                #selector(
+                    NSText.copy(
+                        _:
+                    )
+                ),
+            keyEquivalent:
+                "c"
+        )
+
+        editMenu.addItem(
+            withTitle:
+                "Paste",
+            action:
+                #selector(
+                    NSText.paste(
+                        _:
+                    )
+                ),
+            keyEquivalent:
+                "v"
+        )
+
+        editMenu.addItem(
+            withTitle:
+                "Select All",
+            action:
+                #selector(
+                    NSText.selectAll(
+                        _:
+                    )
+                ),
+            keyEquivalent:
+                "a"
+        )
+
+        let windowMenuItem =
+            NSMenuItem()
+
+        windowMenuItem.title =
+            "Window"
+
+        mainMenu.addItem(
+            windowMenuItem
+        )
+
+        let windowMenu =
+            NSMenu(
+                title:
+                    "Window"
+            )
+
+        windowMenuItem.submenu =
+            windowMenu
+
+        windowMenu.addItem(
+            withTitle:
+                "Minimize",
+            action:
+                #selector(
+                    NSWindow
+                        .performMiniaturize(
+                            _:
+                        )
+                ),
+            keyEquivalent:
+                "m"
+        )
+
+        windowMenu.addItem(
+            withTitle:
+                "Zoom",
+            action:
+                #selector(
+                    NSWindow
+                        .performZoom(
+                            _:
+                        )
+                ),
+            keyEquivalent:
+                ""
+        )
+
+        windowMenu.addItem(
+            NSMenuItem.separator()
+        )
+
+        let bringAll =
+            windowMenu.addItem(
+                withTitle:
+                    "Bring All to Front",
+                action:
+                    #selector(
+                        NSApplication
+                            .arrangeInFront(
+                                _:
+                            )
+                    ),
+                keyEquivalent:
+                    ""
+            )
+
+        bringAll.target =
+            NSApp
+
+        NSApp.mainMenu =
+            mainMenu
+
+        NSApp.windowsMenu =
+            windowMenu
     }
 }
 
-
-// MARK: - Application
-
 @main
-struct MDonnaApp:
-    App
-{
+struct MDonnaMain {
 
-    @NSApplicationDelegateAdaptor(
-        MDonnaAppDelegate.self
-    )
-    private var appDelegate
+    @MainActor
+    private static var
+        appDelegate:
+            MDonnaAppDelegate?
 
+    @MainActor
+    static func main() {
 
-    var body: some Scene {
+        let application =
+            NSApplication.shared
 
-        WindowGroup(
-            id:
-                "editor"
-        ) {
+        let delegate =
+            MDonnaAppDelegate()
 
-            /*
-             EditorWindowRoot, rather than MDonnaApp,
-             owns the document.
+        appDelegate =
+            delegate
 
-             Therefore every WindowGroup instance has
-             completely independent text/file/save state.
-            */
+        application.delegate =
+            delegate
 
-            EditorWindowRoot()
-        }
-        .commands {
+        application.setActivationPolicy(
+            .regular
+        )
 
-            /*
-             Commands obtain the document from the
-             currently focused window.
-            */
-
-            MDonnaCommands()
-        }
+        application.run()
     }
 }
