@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Assets/MDonnaIcon.png" width="220" alt="MDonna icon">
+  <img src="Assets/MDonnaIcon_tr.png" width="220" alt="MDonna icon">
 </p>
 
 MDonna
