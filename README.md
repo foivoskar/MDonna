@@ -23,6 +23,38 @@ The editor itself is separated into a reusable WebEditor based on HTML, CSS, Jav
 Installation
 ============
 
+Quick install with curl
+-----------------------
+
+MDonna can be downloaded, compiled and prepared locally with one command:
+
+    curl -fsSL https://raw.githubusercontent.com/foivoskar/MDonna/main/install.sh | bash
+
+This downloads only the installation script first. The script then clones the public MDonna source repository into:
+
+    $HOME/MDonna
+
+and builds the application locally on the user's Mac.
+
+To check the required development environment without building MDonna:
+
+    curl -fsSL https://raw.githubusercontent.com/foivoskar/MDonna/main/install.sh | bash -s -- --check
+
+For users who prefer to inspect the installer before running it:
+
+    curl -fsSL https://raw.githubusercontent.com/foivoskar/MDonna/main/install.sh -o install-mdonna.sh
+    less install-mdonna.sh
+    bash install-mdonna.sh
+
+Manual installation from Git
+----------------------------
+
+Alternatively, clone the repository manually:
+
+    git clone https://github.com/foivoskar/MDonna.git
+    cd MDonna
+    ./install.sh
+
 MDonna does not require a prebuilt executable download.
 
 The application is compiled locally on the user's Mac.
