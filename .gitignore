@@ -1,16 +1,6 @@
-# macOS
 .DS_Store
-
-# Swift / Xcode build output
 .build/
 dist/
 DerivedData/
-
-# WebEditor dependencies
 WebEditor/node_modules/
-
-# Development backups
 Backups/
-
-# Packaged installer binary
-install/MDonna.zip
