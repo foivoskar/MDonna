@@ -3469,6 +3469,123 @@ function buildDecorations(
 
 
     // --------------------------------------------------------
+    // Bold and italic
+    // --------------------------------------------------------
+
+    const strongEmPatterns = [
+        /(?<!\*)\*\*\*(?!\*)([^*\n]+?)(?<!\*)\*\*\*(?!\*)/g,
+        /(?<!_)___(?!_)([^_\n]+?)(?<!_)___(?!_)/g
+    ];
+
+
+    for (
+        const pattern
+        of strongEmPatterns
+    ) {
+
+        for (
+            const match
+            of text.matchAll(pattern)
+        ) {
+
+            const from =
+                match.index;
+
+            const to =
+                from +
+                match[0].length;
+
+
+            if (
+                insideAnyRange(
+                    from,
+                    to,
+                    protectedRanges
+                )
+            ) {
+
+                continue;
+            }
+
+
+            const contentFrom =
+                from + 3;
+
+            const contentTo =
+                to - 3;
+
+
+            decorations.push(
+                Decoration.mark({
+                    class:
+                        "md-strong md-em"
+                })
+                .range(
+                    contentFrom,
+                    contentTo
+                )
+            );
+
+
+            if (
+                !selectionTouches(
+                    state,
+                    from,
+                    to
+                )
+            ) {
+
+                decorations.push(
+                    Decoration.replace({})
+                        .range(
+                            from,
+                            contentFrom
+                        )
+                );
+
+                decorations.push(
+                    Decoration.replace({})
+                        .range(
+                            contentTo,
+                            to
+                        )
+                );
+
+            } else {
+
+                decorations.push(
+                    Decoration.mark({
+                        class:
+                            "md-syntax"
+                    })
+                    .range(
+                        from,
+                        contentFrom
+                    )
+                );
+
+                decorations.push(
+                    Decoration.mark({
+                        class:
+                            "md-syntax"
+                    })
+                    .range(
+                        contentTo,
+                        to
+                    )
+                );
+            }
+
+
+            protectedRanges.push({
+                from,
+                to
+            });
+        }
+    }
+
+
+    // --------------------------------------------------------
     // Bold
     // --------------------------------------------------------
 

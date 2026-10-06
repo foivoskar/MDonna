@@ -1,0 +1,3 @@
+#!/bin/bash
+MDONNA_VERSION="0.3"
+MDONNA_BUILD_NUMBER="1"
